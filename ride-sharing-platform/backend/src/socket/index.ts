@@ -1,5 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
 import { verifyToken } from '../middleware/auth.js';
 import { SocketEvents } from '@rideshare/shared';
 import { logger } from '../config/logger.js';
@@ -7,6 +8,7 @@ import { rideRepository } from '../repositories/index.js';
 import type { Coordinates, RerouteAlert } from '@rideshare/shared';
 import { haversineDistanceMeters } from '@rideshare/shared';
 import { config } from '../config/index.js';
+import { redisPub, redisSub } from '../config/redis.js';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -41,6 +43,11 @@ export function initializeSocketServer(httpServer: HttpServer): Server {
     },
     transports: ['websocket', 'polling'],
   });
+
+  // Configure Redis adapter for horizontal scaling
+  // This enables Socket.io to work across multiple server instances
+  io.adapter(createAdapter(redisPub, redisSub));
+  logger.info('Socket.io Redis adapter configured');
 
   // Authentication middleware
   io.use((socket: AuthenticatedSocket, next) => {
@@ -81,11 +88,12 @@ export function initializeSocketServer(httpServer: HttpServer): Server {
         const { coordinates, heading = 0, speed = 0, rideId } = data;
 
         // Store location in memory
+        // Only include rideId if defined (avoids exactOptionalPropertyTypes error)
         driverLocations.set(socket.userId, {
           coordinates,
           heading,
           speed,
-          rideId,
+          ...(rideId ? { rideId } : {}),
           updatedAt: new Date(),
         });
 
