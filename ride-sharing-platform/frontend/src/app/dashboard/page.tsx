@@ -14,7 +14,9 @@ import {
     Clock,
     User,
     History,
-    ArrowRight
+    ArrowRight,
+    Sparkles,
+    Award
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -29,8 +31,13 @@ export default function DashboardPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="min-h-screen flex items-center justify-center gradient-hero">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full gradient-primary animate-pulse-glow flex items-center justify-center">
+                        <Car className="w-8 h-8 text-white" />
+                    </div>
+                    <p className="text-muted-foreground animate-pulse">Loading your dashboard...</p>
+                </div>
             </div>
         );
     }
@@ -40,125 +47,105 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="container mx-auto px-4 py-8">
+        <div className="min-h-screen gradient-hero">
+            {/* Decorative orbs */}
+            <div className="orb orb-primary w-64 h-64 -top-32 right-1/4 animate-float opacity-20" />
+            <div className="orb orb-secondary w-48 h-48 bottom-20 left-10 animate-float opacity-20" style={{ animationDelay: '2s' }} />
+
+            <main className="container mx-auto px-4 py-8 relative z-10">
                 {/* Welcome Section */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Welcome back, {user.fullName}! 👋
+                <div className="mb-10 animate-fade-in">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-sm font-medium text-primary">
+                            <Sparkles className="w-4 h-4" />
+                            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}
+                        </div>
+                    </div>
+                    <h1 className="text-4xl font-extrabold">
+                        Welcome back, <span className="text-gradient">{user.fullName}</span>! 👋
                     </h1>
-                    <p className="text-muted-foreground mt-2">
-                        Ready for your next eco-friendly ride?
+                    <p className="text-muted-foreground mt-2 text-lg">
+                        Ready for your next eco-friendly adventure?
                     </p>
                 </div>
 
                 {/* Quick Actions */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-                    <Link href="/ride">
-                        <Card className="hover:shadow-lg transition-shadow cursor-pointer border-primary/20 hover:border-primary">
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-full bg-primary/10 p-3">
-                                        <MapPin className="h-6 w-6 text-primary" />
+                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4 mb-10">
+                    {[
+                        { href: '/ride', icon: MapPin, title: 'Request a Ride', desc: 'Find your next trip', gradient: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/20' },
+                        { href: '/drive', icon: Car, title: 'Drive & Earn', desc: 'Start earning today', gradient: 'from-blue-500 to-indigo-500', shadow: 'shadow-blue-500/20' },
+                        { href: '/history', icon: History, title: 'Ride History', desc: 'View past trips', gradient: 'from-orange-500 to-rose-500', shadow: 'shadow-orange-500/20' },
+                        { href: '/profile', icon: User, title: 'My Profile', desc: 'Manage your account', gradient: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
+                    ].map((action, idx) => (
+                        <Link key={idx} href={action.href}>
+                            <Card className={`card-interactive glass-card group h-full animate-slide-up stagger-${idx + 1}`}>
+                                <CardContent className="pt-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-2xl bg-gradient-to-br ${action.gradient} shadow-lg ${action.shadow} group-hover:scale-110 transition-transform duration-300`}>
+                                            <action.icon className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg">{action.title}</h3>
+                                            <p className="text-sm text-muted-foreground">{action.desc}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold">Request a Ride</h3>
-                                        <p className="text-sm text-muted-foreground">Find your next trip</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-                    <Link href="/drive">
-                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-full bg-blue-500/10 p-3">
-                                        <Car className="h-6 w-6 text-blue-500" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold">Become a Driver</h3>
-                                        <p className="text-sm text-muted-foreground">Start earning today</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-                    <Link href="/history">
-                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-full bg-orange-500/10 p-3">
-                                        <History className="h-6 w-6 text-orange-500" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold">Ride History</h3>
-                                        <p className="text-sm text-muted-foreground">View past trips</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-
-                    <Link href="/profile">
-                        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="rounded-full bg-purple-500/10 p-3">
-                                        <User className="h-6 w-6 text-purple-500" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold">My Profile</h3>
-                                        <p className="text-sm text-muted-foreground">Manage your account</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
                 </div>
 
-                {/* Eco Stats */}
-                <h2 className="text-xl font-semibold mb-4">Your Eco Impact 🌱</h2>
-                <div className="grid gap-4 md:grid-cols-3 mb-8">
-                    <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                        <CardHeader className="pb-2">
-                            <CardDescription className="text-green-100">Total CO₂ Saved</CardDescription>
-                            <CardTitle className="text-3xl">{user.totalCarbonSaved.toFixed(1)} kg</CardTitle>
+                {/* Eco Impact Stats */}
+                <h2 className="text-2xl font-bold mb-5 flex items-center gap-2">
+                    <Leaf className="w-6 h-6 text-emerald-500" />
+                    Your Eco Impact
+                </h2>
+                <div className="grid gap-5 md:grid-cols-3 mb-10">
+                    {/* CO2 Saved */}
+                    <Card className="relative overflow-hidden group hover-lift">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 opacity-90" />
+                        <CardHeader className="relative z-10 pb-2">
+                            <CardDescription className="text-emerald-100 font-medium">Total CO₂ Saved</CardDescription>
+                            <CardTitle className="text-4xl font-extrabold text-white">{user.totalCarbonSaved.toFixed(1)} kg</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2 text-green-100">
-                                <Leaf className="h-4 w-4" />
-                                <span className="text-sm">By choosing pooled rides</span>
+                        <CardContent className="relative z-10">
+                            <div className="flex items-center gap-2 text-emerald-100">
+                                <Leaf className="h-5 w-5" />
+                                <span className="text-sm font-medium">By choosing pooled rides</span>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    {/* Streak */}
+                    <Card className="glass-card hover-lift group">
                         <CardHeader className="pb-2">
-                            <CardDescription>Current Streak</CardDescription>
-                            <CardTitle className="text-3xl flex items-center gap-2">
-                                {user.currentStreak} days
-                                <span className="text-2xl">🔥</span>
+                            <CardDescription className="font-medium">Current Streak</CardDescription>
+                            <CardTitle className="text-4xl font-extrabold flex items-center gap-3">
+                                <span className="text-gradient">{user.currentStreak}</span>
+                                <span className="text-foreground">days</span>
+                                <span className="text-3xl animate-float">🔥</span>
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <TrendingUp className="h-4 w-4" />
+                                <TrendingUp className="h-5 w-5 text-orange-500" />
                                 <span className="text-sm">Keep up the eco-momentum!</span>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    {/* Eco Score */}
+                    <Card className="glass-card hover-lift group">
                         <CardHeader className="pb-2">
-                            <CardDescription>Eco Points</CardDescription>
-                            <CardTitle className="text-3xl">{user.ecoScore}</CardTitle>
+                            <CardDescription className="font-medium">Eco Points</CardDescription>
+                            <CardTitle className="text-4xl font-extrabold flex items-center gap-3">
+                                <span className="text-gradient">{user.ecoScore}</span>
+                                <Award className="w-8 h-8 text-yellow-500 group-hover:scale-110 transition-transform" />
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <Clock className="h-4 w-4" />
+                                <Clock className="h-5 w-5 text-purple-500" />
                                 <span className="text-sm">Climb the leaderboard!</span>
                             </div>
                         </CardContent>
@@ -166,16 +153,23 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Recent Activity */}
-                <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-                <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                        <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p className="text-lg">No recent rides yet</p>
-                        <p className="text-sm mt-2">Book your first ride to start your eco-journey!</p>
+                <h2 className="text-2xl font-bold mb-5 flex items-center gap-2">
+                    <Clock className="w-6 h-6 text-blue-500" />
+                    Recent Activity
+                </h2>
+                <Card className="glass-card">
+                    <CardContent className="py-12 text-center">
+                        <div className="inline-flex p-4 rounded-full bg-muted/50 mb-4">
+                            <History className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                        <p className="text-xl font-medium mb-2">No recent rides yet</p>
+                        <p className="text-muted-foreground max-w-sm mx-auto">
+                            Book your first ride to start your eco-journey and see your activity here!
+                        </p>
                         <Link href="/ride">
-                            <Button className="mt-4 gap-2">
+                            <Button className="mt-6 btn-gradient rounded-full px-8 gap-2 group">
                                 Request a Ride
-                                <ArrowRight className="h-4 w-4" />
+                                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                             </Button>
                         </Link>
                     </CardContent>
