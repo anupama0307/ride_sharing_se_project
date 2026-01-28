@@ -6,6 +6,7 @@ import { RideRequestForm } from '@/components/RideRequestForm';
 import { MapView } from '@/components/MapView';
 import { CarbonComparison } from '@/components/CarbonComparison';
 import { RideMatchResults } from '@/components/RideMatchResults';
+import { MapPin, Sparkles, Leaf } from 'lucide-react';
 import api from '@/lib/api';
 
 interface Location {
@@ -81,11 +82,29 @@ export default function RideRequestPage() {
   const distanceKm = calculateDistance();
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-6">
+    <div className="min-h-screen gradient-hero">
+      {/* Decorative orbs */}
+      <div className="orb orb-primary w-64 h-64 -top-32 -left-32 animate-float opacity-20" />
+      <div className="orb orb-secondary w-48 h-48 top-1/2 -right-24 animate-float opacity-20" style={{ animationDelay: '1s' }} />
+
+      <main className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header */}
+        <div className="mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-sm font-medium text-primary mb-3">
+            <Sparkles className="w-4 h-4" />
+            Find Your Perfect Ride
+          </div>
+          <h1 className="text-3xl font-extrabold">
+            <span className="text-gradient">Request a Ride</span>
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Enter your pickup and drop-off locations to find available rides
+          </p>
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Left Column - Form */}
-          <div className="space-y-6">
+          <div className="space-y-6 animate-slide-up">
             <RideRequestForm
               onSubmit={handleSubmit}
               onPickupChange={setPickupLocation}
@@ -106,9 +125,9 @@ export default function RideRequestPage() {
           </div>
 
           {/* Right Column - Map and Results */}
-          <div className="space-y-6">
+          <div className="space-y-6 animate-slide-up stagger-2">
             {/* Map */}
-            <div className="h-[400px] rounded-lg overflow-hidden border">
+            <div className="h-[400px] rounded-2xl overflow-hidden border shadow-lg glass-card">
               <MapView
                 pickupLocation={pickupLocation}
                 dropoffLocation={dropoffLocation}
@@ -120,6 +139,23 @@ export default function RideRequestPage() {
                   setDropoffLocation({ ...loc, address: loc.address || 'Selected on map' })
                 }
               />
+            </div>
+
+            {/* Eco Tip */}
+            <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 p-4 border border-emerald-200/50 dark:border-emerald-800/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-emerald-500/20">
+                  <Leaf className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                    Eco-Friendly Pooling
+                  </span>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                    Enable pooling to share rides and save up to 60% on emissions
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Matching Rides Results */}
