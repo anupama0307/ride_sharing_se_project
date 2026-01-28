@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -58,38 +58,51 @@ const statusConfig: Record<RideStatus, { label: string; color: string; icon: Rea
 export default function RideTrackingPage() {
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const [ride, setRide] = useState<RideTrackingData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Mock data and status updates
+    // Get search parameters from URL
+    const pickupAddress = searchParams.get('pickup') || 'Pickup Location';
+    const dropoffAddress = searchParams.get('dropoff') || 'Dropoff Location';
+    const pickupLat = parseFloat(searchParams.get('pickupLat') || '12.9716');
+    const pickupLng = parseFloat(searchParams.get('pickupLng') || '77.5946');
+    const dropoffLat = parseFloat(searchParams.get('dropoffLat') || '12.9352');
+    const dropoffLng = parseFloat(searchParams.get('dropoffLng') || '77.6245');
+
+    // Calculate driver position between pickup and dropoff
+    const driverLat = pickupLat + (dropoffLat - pickupLat) * 0.3;
+    const driverLng = pickupLng + (dropoffLng - pickupLng) * 0.3;
+
+    // Mock data and status updates - uses URL params for locations
     useEffect(() => {
         // Initial load
         const timer = setTimeout(() => {
             setRide({
                 id: params.id as string,
                 status: 'driver_en_route',
-                pickupAddress: '123 Main Street, New York, NY',
-                dropoffAddress: '456 Broadway, New York, NY',
-                pickupLocation: { latitude: 40.7128, longitude: -74.006 },
-                dropoffLocation: { latitude: 40.7580, longitude: -73.9855 },
-                driverLocation: { latitude: 40.7200, longitude: -73.995, heading: 45 },
+                pickupAddress: pickupAddress,
+                dropoffAddress: dropoffAddress,
+                pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
+                driverLocation: { latitude: driverLat, longitude: driverLng, heading: 45 },
                 estimatedArrival: '5 min',
                 driver: {
-                    name: 'John Smith',
-                    phone: '+1 (555) 123-4567',
+                    name: 'Rajesh Kumar',
+                    phone: '+91 98765 43210',
                     rating: 4.9,
-                    vehicle: 'Toyota Prius',
-                    color: 'Silver',
-                    licensePlate: 'ABC 1234',
+                    vehicle: 'Maruti Swift Dzire',
+                    color: 'White',
+                    licensePlate: 'KA 01 AB 1234',
                 },
-                fare: 18.50,
+                fare: 185,
             });
             setIsLoading(false);
         }, 1500);
 
         return () => clearTimeout(timer);
-    }, [params.id]);
+    }, [params.id, pickupAddress, dropoffAddress, pickupLat, pickupLng, dropoffLat, dropoffLng, driverLat, driverLng]);
 
     // Simulate driver movement
     useEffect(() => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,8 +48,17 @@ interface RideDetails {
 export default function RideDetailsPage() {
     const router = useRouter();
     const params = useParams();
+    const searchParams = useSearchParams();
     const { user, isLoading, isAuthenticated } = useAuth();
     const [ride, setRide] = useState<RideDetails | null>(null);
+
+    // Get search parameters from URL
+    const pickupAddress = searchParams.get('pickup') || 'Pickup Location';
+    const dropoffAddress = searchParams.get('dropoff') || 'Dropoff Location';
+    const pickupLat = parseFloat(searchParams.get('pickupLat') || '12.9716');
+    const pickupLng = parseFloat(searchParams.get('pickupLng') || '77.5946');
+    const dropoffLat = parseFloat(searchParams.get('dropoffLat') || '12.9352');
+    const dropoffLng = parseFloat(searchParams.get('dropoffLng') || '77.6245');
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -57,34 +66,34 @@ export default function RideDetailsPage() {
         }
     }, [isLoading, isAuthenticated, router]);
 
-    // Mock data for ride details
+    // Mock data for ride details - uses URL params for locations
     useEffect(() => {
         if (isAuthenticated && params.id) {
             // Simulate fetching ride details
             setRide({
                 id: params.id as string,
                 status: 'completed',
-                pickupAddress: '123 Main Street, New York',
-                dropoffAddress: '456 Broadway, New York',
-                pickupLocation: { latitude: 40.7128, longitude: -74.006 },
-                dropoffLocation: { latitude: 40.7580, longitude: -73.9855 },
+                pickupAddress: pickupAddress,
+                dropoffAddress: dropoffAddress,
+                pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
                 scheduledTime: '2026-01-14T10:00:00',
-                fare: 18.50,
+                fare: 185,
                 co2Saved: 2.4,
                 distance: 5.2,
                 duration: 18,
                 isPooled: true,
                 poolSize: 3,
                 driver: {
-                    name: 'John Smith',
+                    name: 'Rajesh Kumar',
                     rating: 4.9,
-                    phone: '+1 (555) 123-4567',
-                    vehicle: 'Toyota Prius (Hybrid)',
-                    licensePlate: 'ABC 1234',
+                    phone: '+91 98765 43210',
+                    vehicle: 'Maruti Swift Dzire (CNG)',
+                    licensePlate: 'KA 01 AB 1234',
                 },
             });
         }
-    }, [isAuthenticated, params.id]);
+    }, [isAuthenticated, params.id, pickupAddress, dropoffAddress, pickupLat, pickupLng, dropoffLat, dropoffLng]);
 
     if (isLoading || !ride) {
         return (

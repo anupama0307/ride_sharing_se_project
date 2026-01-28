@@ -30,6 +30,7 @@ interface AuthContextType {
   register: (data: { email: string; password: string; fullName: string; phone?: string }) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: { firstName?: string; lastName?: string; phone?: string }) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,6 +101,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateProfile = async (data: { firstName?: string; lastName?: string; phone?: string }) => {
+    const response = await api.updateProfile(data);
+    if (response && response.user) {
+      setUser(mapBackendUser(response.user));
+    } else if (response) {
+      setUser(mapBackendUser(response));
+    }
+    return response;
+  };
+
   const logout = () => {
     api.logout();
     setUser(null);
@@ -115,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refreshUser,
+        updateProfile,
       }}
     >
       {children}

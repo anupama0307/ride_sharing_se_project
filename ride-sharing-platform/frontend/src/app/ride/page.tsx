@@ -53,8 +53,18 @@ export default function RideRequestPage() {
     // Store search params in sessionStorage for the results page
     sessionStorage.setItem('rideSearchParams', JSON.stringify(data));
 
-    // Redirect to searching page (which will then redirect to results)
-    router.push('/rides/searching');
+    // Build URL with search params
+    const params = new URLSearchParams({
+      pickup: data.pickupLocation.address || 'Pickup Location',
+      dropoff: data.dropoffLocation.address || 'Dropoff Location',
+      pickupLat: String(data.pickupLocation.latitude),
+      pickupLng: String(data.pickupLocation.longitude),
+      dropoffLat: String(data.dropoffLocation.latitude),
+      dropoffLng: String(data.dropoffLocation.longitude),
+    });
+
+    // Redirect to searching page with params
+    router.push(`/rides/searching?${params.toString()}`);
   };
 
   const handleBookRide = async (rideId: string) => {

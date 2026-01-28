@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,8 +14,13 @@ import {
 
 export default function SearchingPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('Searching nearby drivers...');
+
+    // Get the address from params for display
+    const pickupAddress = searchParams.get('pickup') || 'Pickup Location';
+    const dropoffAddress = searchParams.get('dropoff') || 'Dropoff Location';
 
     useEffect(() => {
         const messages = [
@@ -38,8 +43,8 @@ export default function SearchingPage() {
                 if (prev >= 100) {
                     clearInterval(progressInterval);
                     clearInterval(messageInterval);
-                    // Redirect to results
-                    router.push('/rides/results');
+                    // Redirect to results with same params
+                    router.push(`/rides/results?${searchParams.toString()}`);
                     return 100;
                 }
                 return prev + 2;
@@ -50,7 +55,7 @@ export default function SearchingPage() {
             clearInterval(messageInterval);
             clearInterval(progressInterval);
         };
-    }, [router]);
+    }, [router, searchParams]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50 to-white dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">

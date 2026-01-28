@@ -111,6 +111,13 @@ class ApiClient {
     return this.request<{ user: any }>('/auth/me');
   }
 
+  async updateProfile(data: { firstName?: string; lastName?: string; phone?: string }) {
+    return this.request<{ user: any }>('/auth/profile', {
+      method: 'PATCH',
+      body: data,
+    });
+  }
+
   // Ride endpoints
   async createRideRequest(data: {
     pickupLocation: { latitude: number; longitude: number; address: string };

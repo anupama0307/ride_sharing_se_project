@@ -76,6 +76,56 @@ export abstract class BaseRepository<T extends QueryResultRow> {
       throw new Error('INSERT queries should use Supabase client directly in repository');
     }
 
+    // For UPDATE queries on users table
+    const updateMatch = text.match(/UPDATE users SET[\s\S]*?WHERE id = \$(\d+)/i);
+    if (updateMatch) {
+      // Extract the user id from params (it's the last param)
+      const idParamIndex = parseInt(updateMatch[1]!) - 1;
+      const userId = params?.[idParamIndex];
+
+      // Build update object from query - parse the SET clause
+      const setClause = text.match(/SET ([\s\S]+?) WHERE/i)?.[1] || '';
+      const updateData: Record<string, any> = {};
+
+      // Parse each field assignment
+      let paramIndex = 0;
+      const assignments = setClause.split(',').map(s => s.trim());
+      for (const assignment of assignments) {
+        const fieldMatch = assignment.match(/(\w+)\s*=\s*\$(\d+)/);
+        if (fieldMatch) {
+          const fieldName = fieldMatch[1]!;
+          const pIdx = parseInt(fieldMatch[2]!) - 1;
+          updateData[fieldName] = params?.[pIdx];
+        } else if (assignment.includes('NOW()')) {
+          // Handle updated_at = NOW()
+          const fieldName = assignment.split('=')[0]?.trim();
+          if (fieldName) {
+            updateData[fieldName] = new Date().toISOString();
+          }
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', userId)
+        .select('*')
+        .single();
+
+      if (error) {
+        logger.error('Supabase update error:', error);
+        throw error;
+      }
+
+      return {
+        rows: data ? [data as R] : [],
+        rowCount: data ? 1 : 0,
+        command: 'UPDATE',
+        oid: 0,
+        fields: [],
+      };
+    }
+
     throw new Error(`Query not supported in Supabase fallback mode: ${text.substring(0, 50)}`);
   }
 

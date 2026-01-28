@@ -53,13 +53,13 @@ export default function HomePage() {
               footprint with real-time matching.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/ride">
+              <Link href="/login">
                 <Button size="lg" className="gap-2">
                   Request a Ride
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/drive/offer">
+              <Link href="/login">
                 <Button size="lg" variant="outline" className="gap-2">
                   <Car className="h-4 w-4" />
                   Become a Driver

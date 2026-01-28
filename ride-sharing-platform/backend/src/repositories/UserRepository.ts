@@ -140,48 +140,48 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async update(id: string, data: UpdateUserData): Promise<User | null> {
-    const updates: string[] = [];
-    const values: unknown[] = [];
-    let paramIndex = 1;
+    // Build update object for Supabase
+    const updateData: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
 
     if (data.phone !== undefined) {
-      updates.push(`phone = $${paramIndex++}`);
-      values.push(data.phone);
+      updateData.phone = data.phone;
     }
     if (data.firstName !== undefined) {
-      updates.push(`first_name = $${paramIndex++}`);
-      values.push(data.firstName);
+      updateData.first_name = data.firstName;
     }
     if (data.lastName !== undefined) {
-      updates.push(`last_name = $${paramIndex++}`);
-      values.push(data.lastName);
+      updateData.last_name = data.lastName;
     }
     if (data.avatarUrl !== undefined) {
-      updates.push(`avatar_url = $${paramIndex++}`);
-      values.push(data.avatarUrl);
+      updateData.avatar_url = data.avatarUrl;
     }
     if (data.genderIdentity !== undefined) {
-      updates.push(`gender_identity = $${paramIndex++}`);
-      values.push(data.genderIdentity);
+      updateData.gender_identity = data.genderIdentity;
     }
     if (data.accessibilityNeeds !== undefined) {
-      updates.push(`accessibility_needs = $${paramIndex++}`);
-      values.push(JSON.stringify(data.accessibilityNeeds));
+      updateData.accessibility_needs = data.accessibilityNeeds;
     }
 
-    if (updates.length === 0) {
+    // Only updated_at is set, nothing else to update
+    if (Object.keys(updateData).length === 1) {
       return this.findById(id);
     }
 
-    values.push(id);
-    const result = await this.query<UserRow>(
-      `UPDATE users SET ${updates.join(', ')}, updated_at = NOW()
-       WHERE id = $${paramIndex}
-       RETURNING *`,
-      values
-    );
+    // Use Supabase client directly for updates
+    const { data: result, error } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', id)
+      .select('*')
+      .single();
 
-    return result.rows[0] ? this.mapRowToUser(result.rows[0]) : null;
+    if (error) {
+      throw error;
+    }
+
+    return result ? this.mapRowToUser(result as UserRow) : null;
   }
 
   async updateEcoStats(id: string, co2Saved: number): Promise<void> {

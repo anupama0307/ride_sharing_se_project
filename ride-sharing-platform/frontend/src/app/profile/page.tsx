@@ -21,12 +21,13 @@ import {
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { user, isLoading, isAuthenticated, logout } = useAuth();
+    const { user, isLoading, isAuthenticated, logout, updateProfile } = useAuth();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editName, setEditName] = useState('');
     const [editPhone, setEditPhone] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+    const [saveError, setSaveError] = useState('');
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -43,12 +44,32 @@ export default function ProfilePage() {
 
     const handleSaveProfile = async () => {
         setIsSaving(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setIsSaving(false);
-        setIsEditModalOpen(false);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+        setSaveError('');
+        try {
+            // Split name into first and last name for API
+            const nameParts = editName.trim().split(/\s+/);
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || firstName;
+
+            const updateData: { firstName: string; lastName: string; phone?: string } = {
+                firstName,
+                lastName,
+            };
+            if (editPhone) {
+                updateData.phone = editPhone;
+            }
+
+            await updateProfile(updateData);
+
+            setIsEditModalOpen(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (error) {
+            console.error('Failed to save profile:', error);
+            setSaveError('Failed to save profile. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     if (isLoading) {

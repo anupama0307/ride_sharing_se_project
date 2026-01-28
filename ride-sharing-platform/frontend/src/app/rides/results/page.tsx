@@ -37,6 +37,8 @@ interface MatchingRide {
     co2Savings: number;
     pickupLocation: { latitude: number; longitude: number };
     dropoffLocation: { latitude: number; longitude: number };
+    pickupAddress: string;
+    dropoffAddress: string;
     departureTime: string;
 }
 
@@ -64,7 +66,15 @@ export default function SearchResultsPage() {
     const [cardCVV, setCardCVV] = useState('');
     const [saveCard, setSaveCard] = useState(false);
 
-    // Mock data for demonstration
+    // Get search parameters from URL
+    const pickupAddress = searchParams.get('pickup') || 'Pickup Location';
+    const dropoffAddress = searchParams.get('dropoff') || 'Dropoff Location';
+    const pickupLat = parseFloat(searchParams.get('pickupLat') || '12.9716');
+    const pickupLng = parseFloat(searchParams.get('pickupLng') || '77.5946');
+    const dropoffLat = parseFloat(searchParams.get('dropoffLat') || '12.9352');
+    const dropoffLng = parseFloat(searchParams.get('dropoffLng') || '77.6245');
+
+    // Generate mock rides based on search parameters
     useEffect(() => {
         // Simulate API call delay
         const timer = setTimeout(() => {
@@ -81,8 +91,10 @@ export default function SearchResultsPage() {
                     isPooled: true,
                     amenities: ['ac', 'music', 'smokeFree'],
                     co2Savings: 2.4,
-                    pickupLocation: { latitude: 12.9758, longitude: 77.6045 },
-                    dropoffLocation: { latitude: 12.9352, longitude: 77.6245 },
+                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
+                    pickupAddress: pickupAddress,
+                    dropoffAddress: dropoffAddress,
                     departureTime: '10:15 AM',
                 },
                 {
@@ -97,8 +109,10 @@ export default function SearchResultsPage() {
                     isPooled: false,
                     amenities: ['ac', 'smokeFree'],
                     co2Savings: 1.8,
-                    pickupLocation: { latitude: 12.9758, longitude: 77.6045 },
-                    dropoffLocation: { latitude: 12.9352, longitude: 77.6245 },
+                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
+                    pickupAddress: pickupAddress,
+                    dropoffAddress: dropoffAddress,
                     departureTime: '10:05 AM',
                 },
                 {
@@ -113,8 +127,10 @@ export default function SearchResultsPage() {
                     isPooled: true,
                     amenities: ['ac', 'music', 'smokeFree'],
                     co2Savings: 4.2,
-                    pickupLocation: { latitude: 12.9758, longitude: 77.6045 },
-                    dropoffLocation: { latitude: 12.9352, longitude: 77.6245 },
+                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
+                    pickupAddress: pickupAddress,
+                    dropoffAddress: dropoffAddress,
                     departureTime: '10:20 AM',
                 },
                 {
@@ -129,8 +145,10 @@ export default function SearchResultsPage() {
                     isPooled: true,
                     amenities: ['ac', 'music'],
                     co2Savings: 2.1,
-                    pickupLocation: { latitude: 12.9758, longitude: 77.6045 },
-                    dropoffLocation: { latitude: 12.9352, longitude: 77.6245 },
+                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
+                    pickupAddress: pickupAddress,
+                    dropoffAddress: dropoffAddress,
                     departureTime: '10:30 AM',
                 },
             ]);
@@ -138,7 +156,7 @@ export default function SearchResultsPage() {
         }, 1000);
 
         return () => clearTimeout(timer);
-    }, []);
+    }, [pickupAddress, dropoffAddress, pickupLat, pickupLng, dropoffLat, dropoffLng]);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -180,8 +198,16 @@ export default function SearchResultsPage() {
         await new Promise(resolve => setTimeout(resolve, 1500));
         setIsBooking(false);
         setShowBookingModal(false);
-        // Navigate to ride tracking
-        router.push(`/rides/${rideToBook.id}/track`);
+        // Navigate to ride tracking with location params
+        const params = new URLSearchParams({
+            pickup: pickupAddress,
+            dropoff: dropoffAddress,
+            pickupLat: String(pickupLat),
+            pickupLng: String(pickupLng),
+            dropoffLat: String(dropoffLat),
+            dropoffLng: String(dropoffLng),
+        });
+        router.push(`/rides/${rideToBook.id}/track?${params.toString()}`);
     };
 
     if (authLoading || isLoading) {

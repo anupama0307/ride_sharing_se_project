@@ -8,11 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { MapView } from '@/components/MapView';
-import { 
-  Car, 
-  DollarSign, 
-  Clock, 
-  Users, 
+import {
+  Car,
+  DollarSign,
+  Clock,
+  Users,
   Leaf,
   Navigation,
   Power,
@@ -229,7 +229,7 @@ export default function DrivePage() {
                               </Badge>
                             )}
                           </div>
-                          
+
                           <div className="space-y-2 text-sm">
                             <div className="flex items-start gap-2">
                               <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5" />
