@@ -14,24 +14,18 @@ import {
     Clock,
     User,
     History,
-    LogOut,
     ArrowRight
 } from 'lucide-react';
 
 export default function DashboardPage() {
     const router = useRouter();
-    const { user, isLoading, isAuthenticated, logout } = useAuth();
+    const { user, isLoading, isAuthenticated } = useAuth();
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             router.push('/login');
         }
     }, [isLoading, isAuthenticated, router]);
-
-    const handleLogout = () => {
-        logout();
-        router.push('/');
-    };
 
     if (isLoading) {
         return (

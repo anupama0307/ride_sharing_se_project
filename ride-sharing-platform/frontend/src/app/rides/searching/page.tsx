@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -8,19 +8,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
     Car,
     Loader2,
-    MapPin,
     X
 } from 'lucide-react';
 
-export default function SearchingPage() {
+// Content component that uses useSearchParams
+function SearchingContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [progress, setProgress] = useState(0);
     const [status, setStatus] = useState('Searching nearby drivers...');
-
-    // Get the address from params for display
-    const pickupAddress = searchParams.get('pickup') || 'Pickup Location';
-    const dropoffAddress = searchParams.get('dropoff') || 'Dropoff Location';
 
     useEffect(() => {
         const messages = [
@@ -107,5 +103,18 @@ export default function SearchingPage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+// Default export wraps with Suspense for useSearchParams
+export default function SearchingPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        }>
+            <SearchingContent />
+        </Suspense>
     );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -25,7 +25,6 @@ const navItems = [
 
 export function Navigation() {
     const pathname = usePathname();
-    const router = useRouter();
     const { user, isAuthenticated, logout } = useAuth();
     const [isDarkMode, setIsDarkMode] = useState(false);
 

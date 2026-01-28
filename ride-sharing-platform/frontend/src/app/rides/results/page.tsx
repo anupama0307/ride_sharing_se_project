@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,14 @@ import {
     ArrowLeft,
     Star,
     Clock,
-    DollarSign,
     Users,
     Leaf,
     Filter,
     Wind,
     Music,
-    Cigarette,
-    User
+    Cigarette
 } from 'lucide-react';
+import api from '@/lib/api';
 
 interface MatchingRide {
     id: string;
@@ -42,7 +41,8 @@ interface MatchingRide {
     departureTime: string;
 }
 
-export default function SearchResultsPage() {
+// This is the main content component that uses useSearchParams
+function SearchResultsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -74,88 +74,60 @@ export default function SearchResultsPage() {
     const dropoffLat = parseFloat(searchParams.get('dropoffLat') || '12.9352');
     const dropoffLng = parseFloat(searchParams.get('dropoffLng') || '77.6245');
 
-    // Generate mock rides based on search parameters
+    // Fetch matching rides from the database
     useEffect(() => {
-        // Simulate API call delay
-        const timer = setTimeout(() => {
-            setRides([
-                {
-                    id: '1',
-                    driverName: 'Rajesh Kumar',
-                    driverRating: 4.9,
-                    carModel: 'Maruti Swift Dzire',
-                    licensePlate: 'KA 01 AB 1234',
-                    price: 150,
-                    detourTime: 5,
-                    seatsAvailable: 3,
-                    isPooled: true,
-                    amenities: ['ac', 'music', 'smokeFree'],
-                    co2Savings: 2.4,
-                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
-                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
-                    pickupAddress: pickupAddress,
-                    dropoffAddress: dropoffAddress,
-                    departureTime: '10:15 AM',
-                },
-                {
-                    id: '2',
-                    driverName: 'Priya Sharma',
-                    driverRating: 4.8,
-                    carModel: 'Honda City',
-                    licensePlate: 'KA 05 CD 5678',
-                    price: 200,
-                    detourTime: 3,
-                    seatsAvailable: 2,
-                    isPooled: false,
-                    amenities: ['ac', 'smokeFree'],
-                    co2Savings: 1.8,
-                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
-                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
-                    pickupAddress: pickupAddress,
-                    dropoffAddress: dropoffAddress,
-                    departureTime: '10:05 AM',
-                },
-                {
-                    id: '3',
-                    driverName: 'Arun Patel',
-                    driverRating: 4.7,
-                    carModel: 'Tata Nexon EV',
-                    licensePlate: 'KA 03 EV 9999',
-                    price: 250,
-                    detourTime: 2,
-                    seatsAvailable: 4,
-                    isPooled: true,
-                    amenities: ['ac', 'music', 'smokeFree'],
-                    co2Savings: 4.2,
-                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
-                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
-                    pickupAddress: pickupAddress,
-                    dropoffAddress: dropoffAddress,
-                    departureTime: '10:20 AM',
-                },
-                {
-                    id: '4',
-                    driverName: 'Deepa Reddy',
-                    driverRating: 4.9,
-                    carModel: 'Hyundai Creta',
-                    licensePlate: 'KA 02 MN 4567',
-                    price: 180,
-                    detourTime: 4,
-                    seatsAvailable: 3,
-                    isPooled: true,
-                    amenities: ['ac', 'music'],
-                    co2Savings: 2.1,
-                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
-                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
-                    pickupAddress: pickupAddress,
-                    dropoffAddress: dropoffAddress,
-                    departureTime: '10:30 AM',
-                },
-            ]);
-            setIsLoading(false);
-        }, 1000);
+        const fetchMatchingRides = async () => {
+            try {
+                // Create a ride request and get matching rides from the database
+                const response = await api.createRideRequest({
+                    pickupLocation: {
+                        latitude: pickupLat,
+                        longitude: pickupLng,
+                        address: pickupAddress
+                    },
+                    dropoffLocation: {
+                        latitude: dropoffLat,
+                        longitude: dropoffLng,
+                        address: dropoffAddress
+                    },
+                    pickupWindowStart: new Date().toISOString(),
+                    pickupWindowEnd: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hour window
+                    poolingEnabled: true,
+                });
 
-        return () => clearTimeout(timer);
+                // Map API response to MatchingRide interface
+                const matchingRides: MatchingRide[] = (response.matchingRides || []).map((ride: any) => ({
+                    id: ride.ride?.id || ride.id,
+                    driverName: ride.ride?.driver?.fullName || ride.driver?.fullName || 'Driver',
+                    driverRating: ride.ride?.driver?.rating || ride.driver?.rating || 4.5,
+                    carModel: ride.ride?.vehicle?.model || ride.vehicle?.model || 'Vehicle',
+                    licensePlate: ride.ride?.vehicle?.licensePlate || ride.vehicle?.licensePlate || '',
+                    price: Math.round(ride.priceEstimate || ride.price || 150),
+                    detourTime: Math.round(ride.detourMinutes || ride.detourTime || 5),
+                    seatsAvailable: ride.ride?.availableSeats || ride.availableSeats || 3,
+                    isPooled: ride.ride?.isPooled ?? ride.isPooled ?? true,
+                    amenities: ['ac', 'smokeFree'], // Default amenities
+                    co2Savings: ride.co2Savings ? ride.co2Savings / 1000 : 2.0, // Convert to kg
+                    pickupLocation: { latitude: pickupLat, longitude: pickupLng },
+                    dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
+                    pickupAddress: pickupAddress,
+                    dropoffAddress: dropoffAddress,
+                    departureTime: ride.pickupEta
+                        ? new Date(ride.pickupEta).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                        : '10:00 AM',
+                }));
+
+                setRides(matchingRides);
+            } catch (error) {
+                console.error('Failed to fetch matching rides:', error);
+                // If API fails, show empty results (no mock data fallback)
+                setRides([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchMatchingRides();
     }, [pickupAddress, dropoffAddress, pickupLat, pickupLng, dropoffLat, dropoffLng]);
 
     useEffect(() => {
@@ -194,20 +166,39 @@ export default function SearchResultsPage() {
     const confirmBooking = async () => {
         if (!rideToBook) return;
         setIsBooking(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsBooking(false);
-        setShowBookingModal(false);
-        // Navigate to ride tracking with location params
-        const params = new URLSearchParams({
-            pickup: pickupAddress,
-            dropoff: dropoffAddress,
-            pickupLat: String(pickupLat),
-            pickupLng: String(pickupLng),
-            dropoffLat: String(dropoffLat),
-            dropoffLng: String(dropoffLng),
-        });
-        router.push(`/rides/${rideToBook.id}/track?${params.toString()}`);
+
+        try {
+            // Create booking in the database
+            await api.createBooking(rideToBook.id, {
+                pickupPoint: {
+                    latitude: pickupLat,
+                    longitude: pickupLng,
+                    address: pickupAddress,
+                },
+                dropoffPoint: {
+                    latitude: dropoffLat,
+                    longitude: dropoffLng,
+                    address: dropoffAddress,
+                },
+            });
+
+            setShowBookingModal(false);
+            // Navigate to ride tracking with location params
+            const params = new URLSearchParams({
+                pickup: pickupAddress,
+                dropoff: dropoffAddress,
+                pickupLat: String(pickupLat),
+                pickupLng: String(pickupLng),
+                dropoffLat: String(dropoffLat),
+                dropoffLng: String(dropoffLng),
+            });
+            router.push(`/rides/${rideToBook.id}/track?${params.toString()}`);
+        } catch (error) {
+            console.error('Failed to create booking:', error);
+            alert('Failed to book ride. Please try again.');
+        } finally {
+            setIsBooking(false);
+        }
     };
 
     if (authLoading || isLoading) {
@@ -550,5 +541,18 @@ export default function SearchResultsPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+// Default export wraps with Suspense for useSearchParams
+export default function SearchResultsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        }>
+            <SearchResultsContent />
+        </Suspense>
     );
 }

@@ -10,7 +10,6 @@ import { useAuth } from '@/hooks/useAuth';
 import {
     Car,
     ArrowLeft,
-    MapPin,
     Calendar,
     DollarSign,
     Leaf,

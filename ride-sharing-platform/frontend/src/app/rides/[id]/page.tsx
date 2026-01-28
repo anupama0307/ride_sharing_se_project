@@ -16,11 +16,10 @@ import {
     User,
     Star,
     Phone,
-    AlertTriangle,
     Leaf,
-    Clock,
     DollarSign
 } from 'lucide-react';
+import api from '@/lib/api';
 
 interface RideDetails {
     id: string;
@@ -42,7 +41,7 @@ interface RideDetails {
         phone: string;
         vehicle: string;
         licensePlate: string;
-    };
+    } | undefined;
 }
 
 export default function RideDetailsPage() {
@@ -66,33 +65,53 @@ export default function RideDetailsPage() {
         }
     }, [isLoading, isAuthenticated, router]);
 
-    // Mock data for ride details - uses URL params for locations
+    // Fetch ride details from the database
     useEffect(() => {
-        if (isAuthenticated && params.id) {
-            // Simulate fetching ride details
-            setRide({
-                id: params.id as string,
-                status: 'completed',
-                pickupAddress: pickupAddress,
-                dropoffAddress: dropoffAddress,
-                pickupLocation: { latitude: pickupLat, longitude: pickupLng },
-                dropoffLocation: { latitude: dropoffLat, longitude: dropoffLng },
-                scheduledTime: '2026-01-14T10:00:00',
-                fare: 185,
-                co2Saved: 2.4,
-                distance: 5.2,
-                duration: 18,
-                isPooled: true,
-                poolSize: 3,
-                driver: {
-                    name: 'Rajesh Kumar',
-                    rating: 4.9,
-                    phone: '+91 98765 43210',
-                    vehicle: 'Maruti Swift Dzire (CNG)',
-                    licensePlate: 'KA 01 AB 1234',
-                },
-            });
-        }
+        const fetchRideDetails = async () => {
+            if (!isAuthenticated || !params.id) return;
+
+            try {
+                // Fetch ride details from the database
+                const response = await api.getRideDetails(params.id as string);
+                const rideData = response.ride || response;
+
+                // Map API response to RideDetails interface
+                setRide({
+                    id: rideData.id || params.id as string,
+                    status: rideData.status || 'pending',
+                    pickupAddress: rideData.pickupAddress || rideData.startLocation?.address || pickupAddress,
+                    dropoffAddress: rideData.dropoffAddress || rideData.endLocation?.address || dropoffAddress,
+                    pickupLocation: {
+                        latitude: rideData.pickupLocation?.latitude || rideData.startLocation?.latitude || pickupLat,
+                        longitude: rideData.pickupLocation?.longitude || rideData.startLocation?.longitude || pickupLng,
+                    },
+                    dropoffLocation: {
+                        latitude: rideData.dropoffLocation?.latitude || rideData.endLocation?.latitude || dropoffLat,
+                        longitude: rideData.dropoffLocation?.longitude || rideData.endLocation?.longitude || dropoffLng,
+                    },
+                    scheduledTime: rideData.scheduledWindow?.start || rideData.scheduledTime || new Date().toISOString(),
+                    fare: rideData.fare || rideData.fareAmount || 0,
+                    co2Saved: rideData.co2Saved || 0,
+                    distance: rideData.distance || 0,
+                    duration: rideData.duration || 0,
+                    isPooled: rideData.isPooled ?? true,
+                    poolSize: rideData.poolSize || response.passengers?.length || 1,
+                    driver: rideData.driver ? {
+                        name: rideData.driver.fullName || rideData.driver.name || `${rideData.driver.firstName || ''} ${rideData.driver.lastName || ''}`.trim() || 'Driver',
+                        rating: rideData.driver.rating || 4.5,
+                        phone: rideData.driver.phone || 'N/A',
+                        vehicle: rideData.vehicle ? `${rideData.vehicle.make || ''} ${rideData.vehicle.model || ''}`.trim() : 'Vehicle',
+                        licensePlate: rideData.vehicle?.licensePlate || '',
+                    } : undefined,
+                });
+            } catch (error) {
+                console.error('Failed to fetch ride details:', error);
+                // If ride not found, show empty state
+                setRide(null);
+            }
+        };
+
+        fetchRideDetails();
     }, [isAuthenticated, params.id, pickupAddress, dropoffAddress, pickupLat, pickupLng, dropoffLat, dropoffLng]);
 
     if (isLoading || !ride) {

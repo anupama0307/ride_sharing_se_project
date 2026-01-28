@@ -2,9 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Car, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { RideRequestForm } from '@/components/RideRequestForm';
 import { MapView } from '@/components/MapView';
 import { CarbonComparison } from '@/components/CarbonComparison';
@@ -21,9 +18,9 @@ export default function RideRequestPage() {
   const router = useRouter();
   const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
   const [dropoffLocation, setDropoffLocation] = useState<Location | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [matchingRides, setMatchingRides] = useState<any[] | null>(null);
-  const [carbonEstimate, setCarbonEstimate] = useState<any | null>(null);
+  const [isLoading, _setIsLoading] = useState(false);
+  const [matchingRides, _setMatchingRides] = useState<any[] | null>(null);
+  const [carbonEstimate, _setCarbonEstimate] = useState<any | null>(null);
 
   // Calculate distance between pickup and dropoff
   const calculateDistance = () => {

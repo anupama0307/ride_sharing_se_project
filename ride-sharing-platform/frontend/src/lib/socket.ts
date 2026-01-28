@@ -46,14 +46,13 @@ export interface SOSAlert {
 
 class SocketClient {
   private socket: Socket | null = null;
-  private token: string | null = null;
 
   connect(token: string): Socket {
     if (this.socket?.connected) {
       return this.socket;
     }
 
-    this.token = token;
+
     this.socket = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],

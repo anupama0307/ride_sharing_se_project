@@ -21,13 +21,13 @@ import {
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { user, isLoading, isAuthenticated, logout, updateProfile } = useAuth();
+    const { user, isLoading, isAuthenticated, updateProfile } = useAuth();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editName, setEditName] = useState('');
     const [editPhone, setEditPhone] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [saveError, setSaveError] = useState('');
+    const [_saveError, setSaveError] = useState('');
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
