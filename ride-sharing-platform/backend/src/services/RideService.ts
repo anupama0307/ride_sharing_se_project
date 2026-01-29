@@ -1,8 +1,8 @@
-import { 
-  rideRequestRepository, 
-  rideRepository, 
+import {
+  rideRequestRepository,
+  rideRepository,
   bookingRepository,
-  vehicleRepository 
+  vehicleRepository
 } from '../repositories/index.js';
 import type {
   RideRequest,
@@ -13,6 +13,7 @@ import type {
   Coordinates,
   CarbonEstimate,
   RideStatus,
+  SafetyPreferences,
 } from '@rideshare/shared';
 import {
   haversineDistance,
@@ -33,13 +34,9 @@ interface CreateRideRequestParams {
   pickupLocation: Location;
   dropoffLocation: Location;
   pickupWindow: TimeRange;
-  rideType?: 'solo' | 'pooled';
-  passengerCount?: number;
-  safetyPreferences?: {
-    genderPreference?: 'any' | 'male' | 'female' | 'non_binary';
-    verifiedDriverOnly?: boolean;
-    shareRideDetails?: boolean;
-  };
+  rideType?: 'solo' | 'pooled' | undefined;
+  passengerCount?: number | undefined;
+  safetyPreferences?: SafetyPreferences | undefined;
 }
 
 interface SearchRidesParams {
@@ -73,9 +70,13 @@ export class RideService {
       pickupLocation: params.pickupLocation,
       dropoffLocation: params.dropoffLocation,
       pickupWindow: params.pickupWindow,
-      rideType: params.rideType,
-      passengerCount: params.passengerCount,
-      safetyPreferences: params.safetyPreferences,
+      rideType: params.rideType ?? 'pooled',
+      passengerCount: params.passengerCount ?? 1,
+      safetyPreferences: params.safetyPreferences ?? {
+        genderPreference: 'any',
+        verifiedDriverOnly: false,
+        shareRideDetails: true,
+      },
       estimatedCo2Solo: co2Estimates.solo,
       estimatedCo2Pooled: co2Estimates.pooled,
       estimatedPrice: baseFare,
@@ -118,10 +119,10 @@ export class RideService {
           pickupLocation
         );
         const rideDistance = haversineDistance(pickupLocation, dropoffLocation);
-        
+
         // Calculate detour (simplified)
         const directDistance = haversineDistance(ride.startLocation, ride.endLocation);
-        const withPickupDistance = distanceToPickup + rideDistance + 
+        const withPickupDistance = distanceToPickup + rideDistance +
           haversineDistance(dropoffLocation, ride.endLocation);
         const detourKm = withPickupDistance - directDistance;
         const detourMinutes = detourKm * 2; // Rough estimate: 2 min per km
@@ -138,7 +139,7 @@ export class RideService {
 
         // Price estimate
         const baseFare = calculateBaseFare(rideDistance, rideDistance * 2, ride.pricePerKm);
-        const priceEstimate = ride.isPooled 
+        const priceEstimate = ride.isPooled
           ? calculatePooledDiscount(baseFare, totalPassengers)
           : baseFare;
 
@@ -225,7 +226,7 @@ export class RideService {
    */
   async cancelRideRequest(id: string, userId: string): Promise<RideRequest> {
     const request = await this.getRideRequest(id);
-    
+
     if (request.riderId !== userId) {
       throw new AppError('Not authorized to cancel this request', 403, ErrorCodes.FORBIDDEN);
     }

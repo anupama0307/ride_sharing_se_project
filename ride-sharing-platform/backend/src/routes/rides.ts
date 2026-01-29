@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, type Router as IRouter } from 'express';
 import { rideController } from '../controllers/index.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
-const router = Router();
+const router: IRouter = Router();
 
 // All routes require authentication
 router.use(authenticate);

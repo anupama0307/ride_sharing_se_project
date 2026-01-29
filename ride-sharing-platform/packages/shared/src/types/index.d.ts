@@ -52,7 +52,7 @@ export interface Coordinates {
 }
 export interface Location extends Coordinates {
     address: string;
-    placeId?: string;
+    placeId?: string | undefined;
 }
 export interface RouteGeometry {
     type: 'LineString';

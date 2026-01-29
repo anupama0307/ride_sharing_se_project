@@ -130,7 +130,7 @@ class ApiClient {
     genderPreference?: 'any' | 'female_only' | 'male_only';
   }) {
     return this.request<{ rideRequest: any; matchingRides: any[]; carbonEstimate: any }>(
-      '/rides/request',
+      '/rides/requests',
       { method: 'POST', body: data }
     );
   }

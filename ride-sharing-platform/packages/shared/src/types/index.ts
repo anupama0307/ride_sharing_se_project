@@ -72,7 +72,7 @@ export interface Coordinates {
 
 export interface Location extends Coordinates {
   address: string;
-  placeId?: string;
+  placeId?: string | undefined;
 }
 
 export interface RouteGeometry {
@@ -106,7 +106,7 @@ export interface TsRange {
 // RIDE REQUEST TYPES
 // ============================================
 
-export type RideStatus = 
+export type RideStatus =
   | 'pending'
   | 'matched'
   | 'confirmed'
@@ -171,7 +171,7 @@ export interface Ride {
 // BOOKING TYPES
 // ============================================
 
-export type BookingStatus = 
+export type BookingStatus =
   | 'pending'
   | 'confirmed'
   | 'picked_up'
